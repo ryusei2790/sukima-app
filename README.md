@@ -8,21 +8,30 @@
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+🔗 **ライブデモ：[sukima-app.vercel.app](https://sukima-app.vercel.app/)**
 
 </div>
 
 ---
 
-## 概要
+## 📖 概要
 
 「次に何をしよう？」という迷いをゼロにする、ルーレット式タスク選択アプリです。
 ボタンひとつで今すぐやるべきことをランダムに決定し、隙間時間を有効活用できます。
 タスクの内容は `src/data/tasks.ts` を編集するだけで自由にカスタマイズ可能です。
 
+### なぜ作ったのか
+
+- 休憩中や隙間時間に「何をしようか」と迷い、結局何もしないまま時間が過ぎてしまう経験があった
+- 「次にやること」を即決する仕組みがあれば、隙間時間を無駄にせず有効活用できると考えた
+- シンプルな UI でストレスなく使えるツールを自分で作ることにした
+
 ---
 
-## スクリーンショット
+## 🖼 スクリーンショット
 
 <div align="center">
 <img src="public/images/CleanShot 2026-03-06 at 22.46.23@2x.png" width="360" alt="初期画面（回す前）" />
@@ -31,7 +40,7 @@
 
 ---
 
-## 機能
+## ✨ 機能
 
 | 機能 | 説明 |
 |------|------|
@@ -42,7 +51,7 @@
 
 ---
 
-## 技術スタック
+## 🛠 技術スタック
 
 | カテゴリ | 技術 | バージョン |
 |----------|------|-----------|
@@ -51,35 +60,84 @@
 | スタイリング | Tailwind CSS | 4 |
 | 言語 | TypeScript | 5 |
 | ランタイム | Node.js | 18+ |
+| コンテナ | Docker | — |
+| デプロイ | Vercel | — |
 
 ---
 
-## セットアップ
+## 🏗 アーキテクチャ
 
-### 前提条件
+```mermaid
+graph LR
+    User[ユーザー] -->|ボタンを押す| Page[page.tsx<br/>メイン画面]
+    Page -->|抽選実行| Lib[pickRandom.ts<br/>抽選ロジック]
+    Lib -->|タスク一覧を参照| Data[tasks.ts<br/>タスクデータ]
+    Lib -->|選ばれたタスクを返す| Page
+    Page -->|結果を表示| User
+```
 
-- Node.js 18 以上
+---
 
-### インストール
+## 🚀 セットアップ
+
+起動方法は **Docker を使う方法** と **ローカルの Node.js を使う方法** の 2 通りあります。
+
+---
+
+### 方法 1：Docker で起動する（推奨）
+
+Node.js のインストール不要。Docker さえあれば動きます。
+
+#### 前提条件
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) がインストール済みであること
+
+#### 手順
 
 ```bash
 # リポジトリをクローン
-git clone https://github.com/your-username/sukima-app.git
+git clone https://github.com/ryusei2790/sukima-app.git
+cd sukima-app
+
+# コンテナをビルドして起動
+docker compose up
+```
+
+ブラウザで [http://localhost:3000](http://localhost:3000) を開く。
+
+> ファイルを編集すると、コンテナを再起動しなくてもブラウザに即時反映されます（ホットリロード）。
+
+#### 停止
+
+```bash
+docker compose down
+```
+
+---
+
+### 方法 2：ローカルの Node.js で起動する
+
+#### 前提条件
+
+- Node.js 18 以上
+
+#### 手順
+
+```bash
+# リポジトリをクローン
+git clone https://github.com/ryusei2790/sukima-app.git
 cd sukima-app
 
 # 依存パッケージをインストール
 npm install
-```
 
-### 開発サーバーの起動
-
-```bash
+# 開発サーバーを起動
 npm run dev
 ```
 
 ブラウザで [http://localhost:3000](http://localhost:3000) を開く。
 
-### 本番ビルド
+#### 本番ビルド
 
 ```bash
 npm run build
@@ -88,7 +146,7 @@ npm start
 
 ---
 
-## 使い方
+## 📖 使い方
 
 1. **「回す」ボタンを押す** — 抽選がスタートします
 2. **約1.5秒待つ** — ルーレットのアニメーションが流れます
@@ -97,7 +155,7 @@ npm start
 
 ---
 
-## タスクのカスタマイズ
+## 🔧 タスクのカスタマイズ
 
 [src/data/tasks.ts](src/data/tasks.ts) の配列を直接編集します。
 
@@ -117,7 +175,7 @@ export const tasks: Task[] = [
 
 ---
 
-## ファイル構成
+## 📁 ファイル構成
 
 ```
 sukima-app/
@@ -133,6 +191,8 @@ sukima-app/
 │   │   └── tasks.ts            # タスク一覧（ここを編集）
 │   └── lib/
 │       └── pickRandom.ts       # 等確率抽選ロジック
+├── Dockerfile
+├── docker-compose.yml
 ├── public/                     # 静的アセット
 ├── package.json
 └── README.md
@@ -140,6 +200,6 @@ sukima-app/
 
 ---
 
-## ライセンス
+## 📄 ライセンス
 
 [MIT](LICENSE)
