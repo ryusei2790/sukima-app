@@ -38,8 +38,11 @@ jobs:
         run: npm run lint
 
       # Prisma クライアントの生成（src/generated/ は .gitignore 対象のため CI で必須）
+      # DATABASE_URL はDB接続には使われず prisma.config.ts の変数解決のためのダミー値
       - name: Generate Prisma Client
         run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
 
       # TypeScript の型エラーチェック（コンパイルはせずエラー検出のみ）
       - name: Type check
