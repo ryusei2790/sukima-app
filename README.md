@@ -155,8 +155,7 @@ docker compose down
 
 #### 前提条件
 
-- Node.js 18 以上
-- PostgreSQL が起動していること（または Docker で `docker compose up db -d`）
+- Docker / Docker Compose がインストールされていること
 
 #### 手順
 
@@ -165,28 +164,22 @@ docker compose down
 git clone https://github.com/ryusei2790/sukima-app.git
 cd sukima-app
 
-# 依存パッケージをインストール
-npm install
-
 # 環境変数ファイルを作成
 cp .env.example .env
-# .env を編集して DATABASE_URL と JWT_SECRET を設定
+# .env を編集して JWT_SECRET を設定（DATABASE_URL は docker-compose.yml で自動設定）
+
+# コンテナを起動
+docker compose up -d
 
 # マイグレーション実行（初回のみ）
-npx prisma migrate dev --name init
-
-# 開発サーバーを起動
-npm run dev
+docker compose exec app npx prisma migrate dev --name init
 ```
 
 ブラウザで [http://localhost:3000](http://localhost:3000) を開く。
 
 #### 本番ビルド
 
-```bash
-npm run build
-npm start
-```
+Vercel にデプロイしています。`main` ブランチへのマージで自動デプロイされます。
 
 ---
 
