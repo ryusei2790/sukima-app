@@ -12,3 +12,28 @@ services:
       - NODE_ENV=development
       # Next.js のホットリロードを Docker 内で動かすための設定
       - WATCHPACK_POLLING=true
+      - DATABASE_URL=postgresql://sukima:sukima@db:5432/sukima
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: sukima
+      POSTGRES_PASSWORD: sukima
+      POSTGRES_DB: sukima
+    volumes:
+      # DBデータを永続化（コンテナ再起動後もデータが消えない）
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sukima -d sukima"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
