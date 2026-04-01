@@ -37,6 +37,10 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Prisma クライアントの生成（src/generated/ は .gitignore 対象のため CI で必須）
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
       # TypeScript の型エラーチェック（コンパイルはせずエラー検出のみ）
       - name: Type check
         run: npx tsc --noEmit
