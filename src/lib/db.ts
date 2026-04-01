@@ -13,7 +13,7 @@
  */
 
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaClient } from "../generated/prisma/client";
 
 /** グローバルキャッシュ用の型拡張（開発環境のHot Reload対策） */
 const globalForPrisma = globalThis as unknown as {
