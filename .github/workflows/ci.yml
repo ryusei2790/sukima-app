@@ -49,5 +49,8 @@ jobs:
         run: npx tsc --noEmit
 
       # Next.js の本番ビルドが通るか確認
+      # DATABASE_URL はビルド時のprisma generateの変数解決のためのダミー値
       - name: Build
         run: npm run build
+        env:
+          DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
