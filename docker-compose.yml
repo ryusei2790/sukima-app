@@ -9,7 +9,6 @@ services:
       # node_modules はコンテナ内のものを使う（ホストのものと混在させない）
       - /app/node_modules
     environment:
-      - NODE_ENV=development
       # Next.js のホットリロードを Docker 内で動かすための設定
       - WATCHPACK_POLLING=true
       - DATABASE_URL=postgresql://sukima:sukima@db:5432/sukima
