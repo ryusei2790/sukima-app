@@ -1,9 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { tasks } from "@/data/tasks";
+/**
+ * page.tsx（ルーレットメインページ）
+ * 役割: タスクをAPIから取得してルーレット抽選を行う
+ *
+ * 変更点（旧→新）:
+ * - ハードコードの tasks.ts を直接参照 → GET /api/tasks から取得
+ * - 未ログイン: デフォルトタスクが返ってくる（API側で処理）
+ * - ログイン済み: ユーザー固有タスクが返ってくる
+ */
+
+import { useState, useEffect } from "react";
 import { pickRandom } from "@/lib/pickRandom";
-import type { Task } from "@/data/tasks";
+
+type Task = {
+  id: string;
+  label: string;
+};
 
 /** アプリの状態 */
 type AppState = "idle" | "spinning" | "result";
@@ -12,8 +25,19 @@ type AppState = "idle" | "spinning" | "result";
 const SPIN_DURATION_MS = 1500;
 
 export default function Home() {
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [state, setState] = useState<AppState>("idle");
   const [result, setResult] = useState<Task | null>(null);
+
+  // マウント時にAPIからタスクを取得
+  useEffect(() => {
+    fetch("/api/tasks")
+      .then((res) => res.json())
+      .then((data: Task[]) => setTasks(data))
+      .catch(() => {
+        // APIが使えない場合は空のまま（タスク未登録として扱う）
+      });
+  }, []);
 
   /** 抽選を開始する */
   const handleSpin = () => {

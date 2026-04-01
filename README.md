@@ -54,7 +54,9 @@
 | ランダム抽選 | 登録タスクから等確率で1件を選択 |
 | スピンアニメーション | 1.5秒のローディング演出 |
 | 再抽選 | 「もう一度」ボタンで即リセット |
-| タスクカスタマイズ | `tasks.ts` を編集するだけで追加・変更可能 |
+| ユーザー登録・ログイン | メール/パスワードで新規登録・ログイン可能 |
+| ユーザー別タスク管理 | ログイン後、自分だけのタスクを追加・削除できる |
+| 未ログイン対応 | ログインなしでもデフォルトタスクでルーレットを使用可能 |
 
 ---
 
@@ -66,9 +68,12 @@
 | UI ライブラリ | React | 19 |
 | スタイリング | Tailwind CSS | 4 |
 | 言語 | TypeScript | 5 |
+| 認証 | jose（JWT） + bcryptjs | — |
+| ORM | Prisma | 7 |
+| データベース | PostgreSQL | 16 |
 | ランタイム | Node.js | 18+ |
 | コンテナ | Docker | — |
-| デプロイ | Vercel | — |
+| デプロイ | Render | — |
 
 ---
 
@@ -106,7 +111,31 @@ Node.js のインストール不要。Docker さえあれば動きます。
 git clone https://github.com/ryusei2790/sukima-app.git
 cd sukima-app
 
-# コンテナをビルドして起動
+# 環境変数ファイルを作成
+cp .env.example .env
+```
+
+`.env` を編集して `JWT_SECRET` を設定します。
+
+```bash
+# JWT_SECRET の生成（ターミナルで実行してコピー）
+openssl rand -base64 32
+```
+
+```env
+# .env
+DATABASE_URL="postgresql://sukima:sukima@localhost:5432/sukima"
+JWT_SECRET="生成した文字列をここに貼り付け"
+```
+
+```bash
+# DBコンテナだけ先に起動
+docker compose up db -d
+
+# マイグレーション実行（初回のみ）
+npx prisma migrate dev --name init
+
+# アプリを起動
 docker compose up
 ```
 
@@ -126,7 +155,7 @@ docker compose down
 
 #### 前提条件
 
-- Node.js 18 以上
+- Docker / Docker Compose がインストールされていること
 
 #### 手順
 
@@ -135,30 +164,39 @@ docker compose down
 git clone https://github.com/ryusei2790/sukima-app.git
 cd sukima-app
 
-# 依存パッケージをインストール
-npm install
+# 環境変数ファイルを作成
+cp .env.example .env
+# .env を編集して JWT_SECRET を設定（DATABASE_URL は docker-compose.yml で自動設定）
 
-# 開発サーバーを起動
-npm run dev
+# コンテナを起動
+docker compose up -d
+
+# マイグレーション実行（初回のみ）
+docker compose exec app npx prisma migrate dev --name init
 ```
 
 ブラウザで [http://localhost:3000](http://localhost:3000) を開く。
 
 #### 本番ビルド
 
-```bash
-npm run build
-npm start
-```
+Vercel にデプロイしています。`main` ブランチへのマージで自動デプロイされます。
 
 ---
 
 ## 📖 使い方
 
+### ログインなしで使う
+
 1. **「回す」ボタンを押す** — 抽選がスタートします
 2. **約1.5秒待つ** — ルーレットのアニメーションが流れます
 3. **タスクが表示される** — 今すぐやることが決定！
 4. **「もう一度」を押す** — 別のタスクを選び直したい場合
+
+### アカウント登録して自分のタスクを使う
+
+1. **ナビの「ログイン」→「新規登録」** からアカウントを作成
+2. **ログイン後、「タスク管理」ページ**でタスクを追加・削除
+3. **ルーレット画面**に戻ると、登録したタスクで抽選が行われる
 
 ---
 
@@ -188,19 +226,38 @@ export const tasks: Task[] = [
 sukima-app/
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx          # ルートレイアウト（Nav を含む）
-│   │   ├── page.tsx            # メイン画面（状態管理・UI）
-│   │   └── how-to-use/
-│   │       └── page.tsx        # 使い方ページ
+│   │   ├── layout.tsx              # ルートレイアウト（Nav を含む）
+│   │   ├── page.tsx                # メイン画面（ルーレット）
+│   │   ├── login/
+│   │   │   └── page.tsx            # ログインページ
+│   │   ├── signup/
+│   │   │   └── page.tsx            # 新規登録ページ
+│   │   ├── set/
+│   │   │   └── page.tsx            # タスク管理ページ
+│   │   ├── how-to-use/
+│   │   │   └── page.tsx            # 使い方ページ
+│   │   └── api/
+│   │       ├── auth/
+│   │       │   ├── login/route.ts  # POST /api/auth/login
+│   │       │   ├── logout/route.ts # POST /api/auth/logout
+│   │       │   └── signup/route.ts # POST /api/auth/signup
+│   │       └── tasks/
+│   │           ├── route.ts        # GET / POST /api/tasks
+│   │           └── [id]/route.ts   # DELETE /api/tasks/:id
 │   ├── components/
-│   │   └── Nav.tsx             # ナビゲーションバー
+│   │   └── Nav.tsx                 # ナビゲーションバー
 │   ├── data/
-│   │   └── tasks.ts            # タスク一覧（ここを編集）
+│   │   └── tasks.ts                # デフォルトタスク一覧
 │   └── lib/
-│       └── pickRandom.ts       # 等確率抽選ロジック
+│       ├── pickRandom.ts           # 等確率抽選ロジック
+│       ├── db.ts                   # Prisma Client シングルトン
+│       └── auth.ts                 # JWT 発行・検証
+├── prisma/
+│   └── schema.prisma               # DB スキーマ（User・Task）
+├── .env.example                    # 環境変数テンプレート
 ├── Dockerfile
 ├── docker-compose.yml
-├── public/                     # 静的アセット
+├── public/                         # 静的アセット
 ├── package.json
 └── README.md
 ```
