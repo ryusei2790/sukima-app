@@ -12,6 +12,7 @@
 
 import { useState, useEffect } from "react";
 import { pickRandom } from "@/lib/pickRandom";
+import { event as trackEvent } from "@/lib/gtag";
 
 type Task = {
   id: string;
@@ -42,6 +43,11 @@ export default function Home() {
   /** 抽選を開始する */
   const handleSpin = () => {
     if (state !== "idle") return;
+    trackEvent("roulette_spin", {
+      event_category: "engagement",
+      event_label: "main_roulette",
+      task_count: tasks.length,
+    });
     setState("spinning");
     setTimeout(() => {
       const picked = pickRandom(tasks);

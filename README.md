@@ -126,6 +126,7 @@ openssl rand -base64 32
 # .env
 DATABASE_URL="postgresql://sukima:sukima@localhost:5432/sukima"
 JWT_SECRET="生成した文字列をここに貼り付け"
+NEXT_PUBLIC_GA_MEASUREMENT_ID="G-XXXXXXXXXX"
 ```
 
 ```bash
@@ -166,7 +167,7 @@ cd sukima-app
 
 # 環境変数ファイルを作成
 cp .env.example .env
-# .env を編集して JWT_SECRET を設定（DATABASE_URL は docker-compose.yml で自動設定）
+# .env を編集して JWT_SECRET と必要なら GA の計測IDを設定（DATABASE_URL は docker-compose.yml で自動設定）
 
 # コンテナを起動
 docker compose up -d
@@ -180,6 +181,16 @@ docker compose exec app npx prisma migrate dev --name init
 #### 本番ビルド
 
 Vercel にデプロイしています。`main` ブランチへのマージで自動デプロイされます。
+
+### Google Analytics の設定
+
+GA4 を使う場合は `.env` またはデプロイ先の環境変数に `NEXT_PUBLIC_GA_MEASUREMENT_ID` を設定します。
+
+```env
+NEXT_PUBLIC_GA_MEASUREMENT_ID="G-XXXXXXXXXX"
+```
+
+未設定の場合、Google Analytics のスクリプトは読み込まれません。現在はページビューとルーレットの `roulette_spin` イベントを送信します。
 
 ---
 
